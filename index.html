@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Formulir & Cetak Laporan Perjadin</title>
+    <title>Laporan Kegiatan Perjadin - BPS</title>
     <script src="https://cdn.jsdelivr.net/npm/react@18/umd/react.production.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -20,19 +20,20 @@
             .print-container {
                 box-shadow: none !important;
                 margin: 0 !important;
-                padding: 1cm !important;
+                padding: 0 !important;
                 width: 100% !important;
             }
         }
-        table.document-grid {
+        table.report-table {
             border-collapse: collapse;
             width: 100%;
             font-family: Arial, sans-serif;
             font-size: 11pt;
+            color: black;
         }
-        table.document-grid th, table.document-grid td {
+        table.report-table th, table.report-table td {
             border: 1px solid black;
-            padding: 6px 8px;
+            padding: 6px 10px;
             vertical-align: top;
         }
     </style>
@@ -44,22 +45,20 @@
         const { useState } = React;
 
         function App() {
-            // URL Web App Google Apps Script Anda sudah terpasang di sini
             const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxPpDXgKKPvaI1e0bQMi_yspTBjNJMS_3xTqqg5gzVCWpLPEA00iS1VkMxchd8M4CKh/exec";
 
             const [formData, setFormData] = useState({
                 nama: "",
                 tujuan: "",
+                jadwal: "",
                 anggaranMembiayai: "054",
                 anggaranDiperiksa: "054",
-                jadwal: "",
                 urutanKegiatan: "",
                 pejabatTempat: ""
             });
 
             const [photos, setPhotos] = useState({ foto1: "", foto2: "", foto3: "" });
             const [loading, setLoading] = useState(false);
-            const [isSaved, setIsSaved] = useState(false);
 
             const handleChange = (e) => {
                 setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -89,8 +88,7 @@
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify(payload)
                     });
-                    setIsSaved(true);
-                    alert("Data berhasil dicatat ke Spreadsheet!");
+                    alert("Data berhasil dicatat ke Google Spreadsheet!");
                 } catch (error) {
                     alert("Gagal menyimpan data ke Spreadsheet.");
                 } finally {
@@ -103,26 +101,26 @@
             };
 
             return (
-                <div className="max-w-4xl mx-auto my-6 p-8 bg-white shadow-xl rounded-lg print-container">
+                <div className="max-w-4xl mx-auto my-6 p-6 bg-white shadow-xl rounded-lg print-container">
                     
-                    {/* PANEL INPUT PENGISIAN (Hilang saat dicetak) */}
+                    {/* PANEL INPUT (Tersembunyi Saat Dicetak) */}
                     <div className="no-print mb-8 p-6 bg-slate-50 border rounded-lg shadow-sm">
-                        <h2 className="text-lg font-bold mb-4 text-blue-800">Panel Input Data Laporan Perjadin</h2>
+                        <h2 className="text-lg font-bold mb-4 text-blue-800">Form Pengisian Laporan Perjadin</h2>
                         <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                             <div>
                                 <label className="block font-semibold mb-1">Nama Petugas:</label>
                                 <input type="text" name="nama" value={formData.nama} onChange={handleChange} required className="w-full p-2 border rounded bg-white" placeholder="Nama & Gelar" />
                             </div>
                             <div>
-                                <label className="block font-semibold mb-1">Tujuan Perjalanan / Pengawasan:</label>
-                                <input type="text" name="tujuan" value={formData.tujuan} onChange={handleChange} required className="w-full p-2 border rounded bg-white" placeholder="Lokasi/Tujuan" />
+                                <label className="block font-semibold mb-1">Tujuan / Lokasi:</label>
+                                <input type="text" name="tujuan" value={formData.tujuan} onChange={handleChange} required className="w-full p-2 border rounded bg-white" placeholder="Tujuan perjalanan" />
                             </div>
                             <div>
-                                <label className="block font-semibold mb-1">Anggaran/Kegiatan yang Membiayai:</label>
+                                <label className="block font-semibold mb-1">Anggaran yang Membiayai:</label>
                                 <input type="text" name="anggaranMembiayai" value={formData.anggaranMembiayai} onChange={handleChange} className="w-full p-2 border rounded bg-white" />
                             </div>
                             <div>
-                                <label className="block font-semibold mb-1">Anggaran/Kegiatan yang Diperiksa:</label>
+                                <label className="block font-semibold mb-1">Anggaran yang Diperiksa:</label>
                                 <input type="text" name="anggaranDiperiksa" value={formData.anggaranDiperiksa} onChange={handleChange} className="w-full p-2 border rounded bg-white" />
                             </div>
                             <div className="md:col-span-2">
@@ -131,16 +129,15 @@
                             </div>
                             <div className="md:col-span-2">
                                 <label className="block font-semibold mb-1">B. Urutan Kegiatan (Ringkasan Hasil):</label>
-                                <textarea name="urutanKegiatan" rows="4" value={formData.urutanKegiatan} onChange={handleChange} required className="w-full p-2 border rounded bg-white" placeholder="Tuliskan ringkasan hasil kegiatan..."></textarea>
+                                <textarea name="urutanKegiatan" rows="4" value={formData.urutanKegiatan} onChange={handleChange} required className="w-full p-2 border rounded bg-white" placeholder="Uraikan ringkasan hasil kegiatan..."></textarea>
                             </div>
                             <div className="md:col-span-2">
                                 <label className="block font-semibold mb-1">C. Pejabat dan Tempat yang Dikunjungi:</label>
-                                <textarea name="pejabatTempat" rows="2" value={formData.pejabatTempat} onChange={handleChange} required className="w-full p-2 border rounded bg-white" placeholder="Daftar instansi/pejabat yang dikunjungi..."></textarea>
+                                <textarea name="pejabatTempat" rows="2" value={formData.pejabatTempat} onChange={handleChange} required className="w-full p-2 border rounded bg-white" placeholder="Daftar pejabat/tempat yang dikunjungi..."></textarea>
                             </div>
                             
-                            {/* Upload Dokumentasi */}
                             <div className="md:col-span-2 border-t pt-4">
-                                <label className="block font-semibold mb-2">D. Dokumentasi Kegiatan (Unggah Foto):</label>
+                                <label className="block font-semibold mb-2">D. Dokumentasi (Unggah Foto):</label>
                                 <div className="grid grid-cols-3 gap-3">
                                     <div>
                                         <input type="file" accept="image/*" onChange={(e) => handleImageChange(e, 'foto1')} className="text-xs mb-1" />
@@ -162,95 +159,95 @@
                                     {loading ? "Menyimpan..." : "Simpan ke Spreadsheet"}
                                 </button>
                                 <button type="button" onClick={handlePrint} className="bg-slate-800 hover:bg-black text-white font-medium py-2 px-6 rounded shadow">
-                                    Cetak Dokumen Persis Asli
+                                    Cetak Dokumen Sesuai Format Asli
                                 </button>
                             </div>
                         </form>
                     </div>
 
-                    {/* TEMPLATE DOKUMEN RESMI (Sama persis dengan format Word yang di-upload) */}
-                    <div className="bg-white text-black">
-                        <div className="text-center font-bold text-lg mb-6 tracking-wide">
+                    {/* DOKUMEN CETAK UTAMA (Persis Susunan Dokumen Word Asli) */}
+                    <div className="bg-white text-black p-2">
+                        <div className="text-center font-bold text-xl mb-4 tracking-wide">
                             LAPORAN KEGIATAN
                         </div>
 
-                        <table className="document-grid">
+                        <table className="report-table">
                             <tbody>
-                                {/* Bagian A: Informasi Umum */}
+                                {/* Baris Header UMUM */}
                                 <tr>
-                                    <td className="w-1/2 font-bold bg-slate-100" colSpan="2">A. UMUM</td>
-                                    <td className="w-1/2 font-bold bg-slate-100" colSpan="2">4. Anggaran/Kegiatan yang membiayai</td>
+                                    <td colSpan="2" className="font-bold bg-gray-50">UMUM</td>
+                                    <td colSpan="2" className="font-bold bg-gray-50">4. Anggaran/Kegiatan yang membiayai</td>
                                 </tr>
                                 <tr>
-                                    <td className="w-1/4 font-semibold">1. Nama</td>
-                                    <td className="w-1/4">{formData.nama || "[Nama Petugas]"}</td>
-                                    <td className="w-1/4" colSpan="2" rowSpan="3">{formData.anggaranMembiayai}</td>
+                                    <td className="w-[15%] font-semibold">Nama</td>
+                                    <td className="w-[35%]">{formData.nama || ""}</td>
+                                    <td colSpan="2" rowSpan="3" className="w-[50%] align-top">{formData.anggaranMembiayai}</td>
                                 </tr>
                                 <tr>
-                                    <td className="font-semibold">2. Tujuan</td>
-                                    <td>{formData.tujuan || "[Tujuan Kegiatan]"}</td>
+                                    <td className="font-semibold">Tujuan</td>
+                                    <td>{formData.tujuan || ""}</td>
                                 </tr>
                                 <tr>
                                     <td className="font-semibold">3. Jadwal</td>
-                                    <td>{formData.jadwal || "[Jadwal Pelaksanaan]"}</td>
+                                    <td>{formData.jadwal || ""}</td>
                                 </tr>
                                 <tr>
-                                    <td className="font-semibold bg-slate-50" colSpan="2"></td>
-                                    <td className="font-bold bg-slate-100" colSpan="2">5. Anggaran/Kegiatan yang diperiksa</td>
+                                    <td colSpan="2" className="bg-gray-50"></td>
+                                    <td colSpan="2" className="font-bold bg-gray-50">5. Anggaran/Kegiatan yang diperiksa</td>
                                 </tr>
                                 <tr>
-                                    <td className="font-semibold bg-slate-50" colSpan="2"></td>
-                                    <td colSpan="2" rowSpan="2">{formData.anggaranDiperiksa}</td>
+                                    <td colSpan="2" className="bg-gray-50"></td>
+                                    <td colSpan="2" rowSpan="2" className="align-top">{formData.anggaranDiperiksa}</td>
                                 </tr>
                                 <tr>
-                                    <td className="font-semibold bg-slate-50" colSpan="2"></td>
+                                    <td colSpan="2" className="bg-gray-50"></td>
                                 </tr>
                                 <tr>
-                                    <td className="font-semibold bg-slate-50" colSpan="2"></td>
-                                    <td className="font-bold bg-slate-100" colSpan="2">6. Tanda tangan Petugas</td>
+                                    <td colSpan="2" className="bg-gray-50"></td>
+                                    <td colSpan="2" className="font-bold bg-gray-50">6. Tanda tangan Petugas</td>
                                 </tr>
                                 <tr>
-                                    <td className="font-semibold bg-slate-50" colSpan="2"></td>
-                                    <td colSpan="2" className="h-16 text-center text-slate-400 italic align-middle">
+                                    <td colSpan="2" className="bg-gray-50"></td>
+                                    <td colSpan="2" className="h-20 text-center text-gray-400 italic align-middle">
                                         (Dikosongkan sesuai permintaan)
                                     </td>
                                 </tr>
 
-                                {/* Bagian B: Urutan Kegiatan */}
+                                {/* Bagian B */}
                                 <tr>
-                                    <td colSpan="4" className="font-bold bg-slate-100 pt-4">B. URUTAN KEGIATAN (RINGKASAN HASIL)</td>
+                                    <td colSpan="4" className="font-bold bg-gray-50 pt-3">B. URUTAN KEGIATAN (RINGKASAN HASIL)</td>
                                 </tr>
                                 <tr>
-                                    <td colSpan="4" className="min-h-[120px] whitespace-pre-line">
-                                        {formData.urutanKegiatan || "[Uraian ringkasan hasil kegiatan pengawasan lapangan akan tampil di sini...]"}
+                                    <td colSpan="4" className="min-h-[140px] whitespace-pre-line py-3">
+                                        {formData.urutanKegiatan || ""}
                                     </td>
                                 </tr>
 
-                                {/* Bagian C: Pejabat & Tempat */}
+                                {/* Bagian C */}
                                 <tr>
-                                    <td colSpan="4" className="font-bold bg-slate-100 pt-4">C. PEJABAT DAN TEMPAT YANG DIKUNJUNGI</td>
+                                    <td colSpan="4" className="font-bold bg-gray-50 pt-3">C. PEJABAT DAN TEMPAT YANG DIKUNJUNGI</td>
                                 </tr>
                                 <tr>
-                                    <td colSpan="4" className="min-h-[80px] whitespace-pre-line">
-                                        {formData.pejabatTempat || "[Daftar pejabat dan tempat yang dikunjungi...]"}
+                                    <td colSpan="4" className="min-h-[90px] whitespace-pre-line py-3">
+                                        {formData.pejabatTempat || ""}
                                     </td>
                                 </tr>
 
-                                {/* Bagian D: Dokumentasi */}
+                                {/* Bagian D */}
                                 <tr>
-                                    <td colSpan="4" className="font-bold bg-slate-100 pt-4">D. DOKUMENTASI</td>
+                                    <td colSpan="4" className="font-bold bg-gray-50 pt-3">D. DOKUMENTASI</td>
                                 </tr>
                                 <tr>
-                                    <td colSpan="4">
-                                        <div className="grid grid-cols-3 gap-4 py-2">
-                                            <div className="border border-dashed p-2 text-center h-40 flex items-center justify-center">
-                                                {photos.foto1 ? <img src={photos.foto1} className="max-h-full max-w-full object-contain" /> : <span className="text-xs text-slate-400">Foto Dokumentasi 1</span>}
+                                    <td colSpan="4" className="py-3">
+                                        <div className="grid grid-cols-3 gap-4">
+                                            <div className="border border-dashed border-gray-400 p-2 text-center h-44 flex items-center justify-center bg-gray-50">
+                                                {photos.foto1 ? <img src={photos.foto1} className="max-h-full max-w-full object-contain" /> : <span className="text-xs text-gray-400">Foto Dokumentasi 1</span>}
                                             </div>
-                                            <div className="border border-dashed p-2 text-center h-40 flex items-center justify-center">
-                                                {photos.foto2 ? <img src={photos.foto2} className="max-h-full max-w-full object-contain" /> : <span className="text-xs text-slate-400">Foto Dokumentasi 2</span>}
+                                            <div className="border border-dashed border-gray-400 p-2 text-center h-44 flex items-center justify-center bg-gray-50">
+                                                {photos.foto2 ? <img src={photos.foto2} className="max-h-full max-w-full object-contain" /> : <span className="text-xs text-gray-400">Foto Dokumentasi 2</span>}
                                             </div>
-                                            <div className="border border-dashed p-2 text-center h-40 flex items-center justify-center">
-                                                {photos.foto3 ? <img src={photos.foto3} className="max-h-full max-w-full object-contain" /> : <span className="text-xs text-slate-400">Foto Dokumentasi 3</span>}
+                                            <div className="border border-dashed border-gray-400 p-2 text-center h-44 flex items-center justify-center bg-gray-50">
+                                                {photos.foto3 ? <img src={photos.foto3} className="max-h-full max-w-full object-contain" /> : <span className="text-xs text-gray-400">Foto Dokumentasi 3</span>}
                                             </div>
                                         </div>
                                     </td>
