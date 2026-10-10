@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplikasi Laporan Perjadin - BPS</title>
+    <script src="https://cdn.jsdelivr.net/npm/react@18/umd/react.production.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 text-slate-800">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        function App() {
+            // Ganti URL di bawah dengan URL Web App dari Google Apps Script Anda
+            const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxPpDXgKKPvaI1e0bQMi_yspTBjNJMS_3xTqqg5gzVCWpLPEA00iS1VkMxchd8M4CKh/exec";
+
+            const [formData, setFormData] = useState({
+                nama: "",
+                kecamatan: "",
+                jenisSurvei: "",
+                tujuanSurvei: "",
+                jadwal: "",
+                anggaranMembiayai: "054",
+                anggaranDiperiksa: "054",
+                urutanKegiatan: "",
+                pejabatTempat: ""
+            });
+
+            const [photos, setPhotos] = useState({ foto1: "", foto2: "", foto3: "" });
+            const [loading, setLoading] = useState(false);
+            const [successMessage, setSuccessMessage] = useState("");
+
+            const handleChange = (e) => {
+                setFormData({ ...formData, [e.target.name]: e.target.value });
+            };
+
+            const handleImageChange = (e, fotoKey) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onloadend = () => {
+                        setPhotos(prev => ({ ...prev, [fotoKey]: reader.result }));
+                    };
+                    reader.readAsDataURL(file);
+                }
+            };
+
+            const handleSubmit = async (e) => {
+                e.preventDefault();
+                setLoading(true);
+                setSuccessMessage("");
+
+                const payload = { ...formData, ...photos };
+
+                try {
+                    await fetch(WEB_APP_URL, {
+                        method: "POST",
+                        mode: "no-cors",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(payload)
+                    });
+                    setSuccessMessage("Laporan berhasil disimpan ke Spreadsheet dan siap dicetak!");
+                } catch (error) {
+                    alert("Terjadi kesalahan saat menyimpan data.");
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            const handlePrint = () => {
+                window.print();
+            };
+
+            return (
+                <div className="max-w-4xl mx-auto p-6 my-8 bg-white shadow-lg rounded-xl print:shadow-none print:p-0">
+                    <div className="text-center border-b pb-4 mb-6 print:mb-4">
+                        <h1 className="text-2xl font-bold uppercase tracking-wide">Laporan Kegiatan Pengawasan Perjadin</h1>
+                        <p className="text-sm text-slate-500">Badan Pusat Statistik</p>
+                    </div>
+
+                    {successMessage && (
+                        <div className="mb-6 p-4 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-lg text-sm font-medium print:hidden">
+                            {successMessage}
+                        </div>
+                    )}
+
+                    <form onSubmit={handleSubmit} className="space-y-6 print:space-y-4">
+                        {/* A. KELOMPOK INFORMASI UMUM */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-semibold mb-1">Nama Petugas</label>
+                                <input type="text" name="nama" value={formData.nama} onChange={handleChange} required className="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm" placeholder="Nama lengkap & gelar" />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold mb-1">Kecamatan Lokasi Tugas</label>
+                                <input type="text" name="kecamatan" value={formData.kecamatan} onChange={handleChange} required className="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm" placeholder="Contoh: Bulakamba" />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold mb-1">Jenis Survei</label>
+                                <input type="text" name="jenisSurvei" value={formData.jenisSurvei} onChange={handleChange} required className="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm" placeholder="Contoh: Sensus Ekonomi / Sakernas / Podes" />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold mb-1">Tujuan / Sasaran Kegiatan</label>
+                                <input type="text" name="tujuanSurvei" value={formData.tujuanSurvei} onChange={handleChange} required className="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm" placeholder="Tujuan pengawasan" />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold mb-1">Jadwal Pelaksanaan</label>
+                                <input type="text" name="jadwal" value={formData.jadwal} onChange={handleChange} required className="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm" placeholder="Contoh: 10 - 12 Oktober 2026" />
+                            </div>
+                            <div className="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label className="block text-sm font-semibold mb-1">Anggaran Membiayai</label>
+                                    <input type="text" name="anggaranMembiayai" value={formData.anggaranMembiayai} onChange={handleChange} className="w-full p-2.5 border rounded-lg text-sm" />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-semibold mb-1">Anggaran Diperiksa</label>
+                                    <input type="text" name="anggaranDiperiksa" value={formData.anggaranDiperiksa} onChange={handleChange} className="w-full p-2.5 border rounded-lg text-sm" />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* B. URUTAN KEGIATAN */}
+                        <div>
+                            <label className="block text-sm font-semibold mb-1">B. Urutan Kegiatan (Ringkasan Hasil)</label>
+                            <textarea name="urutanKegiatan" rows="4" value={formData.urutanKegiatan} onChange={handleChange} required className="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm" placeholder="Uraikan ringkasan hasil pengawasan lapangan..."></textarea>
+                        </div>
+
+                        {/* C. PEJABAT DAN TEMPAT YANG DIKUNJUNGI */}
+                        <div>
+                            <label className="block text-sm font-semibold mb-1">C. Pejabat dan Tempat yang Dikunjungi</label>
+                            <textarea name="pejabatTempat" rows="3" value={formData.pejabatTempat} onChange={handleChange} required className="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 text-sm" placeholder="Sebutkan kantor desa, instansi, atau pejabat yang ditemui..."></textarea>
+                        </div>
+
+                        {/* D. DOKUMENTASI */}
+                        <div className="border-t pt-4">
+                            <label className="block text-sm font-semibold mb-2">D. Dokumentasi Kegiatan (Maksimal 3 Foto)</label>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                {['foto1', 'foto2', 'foto3'].map((fotoKey, idx) => (
+                                    <div key={fotoKey} className="border p-3 rounded-lg text-center bg-slate-50">
+                                        <input type="file" accept="image/*" onChange={(e) => handleImageChange(e, fotoKey)} className="text-xs w-full mb-2" />
+                                        {photos[fotoKey] ? (
+                                            <img src={photos[fotoKey]} alt={`Dokumentasi ${idx + 1}`} className="h-32 w-full object-cover rounded-md mt-2" />
+                                        ) : (
+                                            <div className="h-32 border-2 border-dashed flex items-center justify-center text-xs text-slate-400 rounded-md">Belum ada foto</div>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* TOMBOL AKSI */}
+                        <div className="flex gap-4 pt-4 print:hidden">
+                            <button type="submit" disabled={loading} className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-4 rounded-lg transition duration-200 text-sm">
+                                {loading ? "Menyimpan..." : "Simpan ke Spreadsheet"}
+                            </button>
+                            <button type="button" onClick={handlePrint} className="bg-slate-700 hover:bg-slate-800 text-white font-medium py-2.5 px-6 rounded-lg transition duration-200 text-sm">
+                                Cetak / Simpan PDF
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            );
+        }
+
+        ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+    </script>
+</body>
+</html>
